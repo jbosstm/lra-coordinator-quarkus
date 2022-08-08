@@ -1,0 +1,41 @@
+name: Narayana LRA Coordinator quay.io image push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'pom.xml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Push image to quay.io
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Check changed files
+        id: check_upgrades
+        run: |
+          set +e
+          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<narayana.version>"
+          export narayana_or_quarkus_upgrade=$(echo $?)
+          set -e
+          echo "::set-output name=NARAYANA_OR_QUARKUS_UPGRADE::$narayana_or_quarkus_upgrade"
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: temurin
+          cache: maven
+          check-latest: true
+      - name: Build, Test and push image
+        if: steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0'
+        run: |
+          ./mvnw clean package -Dquarkus.container-image.push=true -Dquarkus.container-image.tag=$(./mvnw help:evaluate -Dexpression=narayana.version -q -DforceStdout)-$(./mvnw help:evaluate -Dexpression=quarkus.platform.version -q -DforceStdout)
+        env:
+          QUARKUS_CONTAINER_IMAGE_USERNAME: ${{ secrets.QUARKUS_CONTAINER_IMAGE_USERNAME }}
+          QUARKUS_CONTAINER_IMAGE_PASSWORD: ${{ secrets.QUARKUS_CONTAINER_IMAGE_PASSWORD }}
+
