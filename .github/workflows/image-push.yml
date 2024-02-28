@@ -34,7 +34,7 @@ jobs:
           cache: maven
           check-latest: true
       - name: Build, Test and push image
-        if: steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0'
+        if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         run: |
           ./mvnw clean package -Dquarkus.container-image.push=true -Dquarkus.container-image.tag=$(./mvnw help:evaluate -Dexpression=narayana.version -q -DforceStdout)-$(./mvnw help:evaluate -Dexpression=quarkus.platform.version -q -DforceStdout)
         env:
