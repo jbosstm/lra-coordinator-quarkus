@@ -1,6 +1,7 @@
 name: Narayana LRA Coordinator quay.io image push
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
