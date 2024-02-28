@@ -54,4 +54,31 @@ jobs:
           mvn clean verify -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
           kill %1
 
+  test-containers:
+    runs-on: ubuntu-latest
+    name: Integration verification with Quarkus and test-containers
+    steps:
+      - uses: actions/checkout@v2
 
+      - uses: actions/setup-java@v2
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn -B install
+
+      - name: Checkout Quarkus
+        uses: actions/checkout@v2
+        with:
+          repository: quarkusio/quarkus
+          path: ./quarkus
+
+      - name: Quarkus integration
+        working-directory: ./quarkus
+        run: |
+          mvn -Dquickly
+          ./mvnw clean package -Dquarkus.container-image.tag=$(./mvnw help:evaluate -Dexpression=narayana.version -q -DforceStdout)-$(./mvnw help:evaluate -Dexpression=quarkus.platform.version -q -DforceStdout)
+          mvn clean verify -pl tcks/microprofile-lra -Dtcks -Dstart-containers -Dtest-containers
+          kill %1
