@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Push image to quay.io
-    if: ${{ contains(github.event.head_commit.message, 'narayana-bom') || contains(github.event.head_commit.message, 'quarkus.platform.version') }}
+    if: ${{ contains(github.event.head_commit.message, 'narayana-bom') || contains(github.event.head_commit.message, 'quarkus.platform.version') || github.event.name == 'workflow_dispatch' }}
 
     steps:
       - uses: actions/checkout@v2
