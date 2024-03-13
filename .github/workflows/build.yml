@@ -15,6 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v2
         with:
@@ -22,12 +23,13 @@ jobs:
           distribution: temurin
           cache: maven
           check-latest: true
+
       - name: Build and Test with Java ${{ matrix.java }}
         run: mvn -B verify
 
-  integration-verification:
+  integration-verification-jar:
     runs-on: ubuntu-latest
-    name: Integration verification with Quarkus
+    name: Integration verification with Quarkus (JAR)
     steps:
       - uses: actions/checkout@v2
 
@@ -35,7 +37,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          cache: maven
 
       - name: Build with Maven
         run: mvn -B install
@@ -46,12 +47,56 @@ jobs:
           repository: quarkusio/quarkus
           path: ./quarkus
 
-      - name: Quarkus integration
+      - name: Build Quarkus
         working-directory: ./quarkus
         run: |
-          mvn -Dquickly
+          ./mvnw -Dquickly
+
+      - name: Quarkus integration (JAR)
+        working-directory: ./quarkus
+        run: |
           java -jar ../target/quarkus-app/quarkus-run.jar &
-          mvn clean verify -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
+          ./mvnw clean verify -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
           kill %1
+
+  integration-verification-image:
+    runs-on: ubuntu-latest
+    name: Integration verification with Quarkus (Docker image)
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Build with Maven (including image)
+        run: mvn -B install -Dquarkus.container-image.build=true
+
+      - name: Checkout Quarkus
+        uses: actions/checkout@v2
+        with:
+          repository: quarkusio/quarkus
+          path: ./quarkus
+
+      - name: Build Quarkus
+        working-directory: ./quarkus
+        run: |
+          ./mvnw -Dquickly
+
+      - name: Quarkus integration (Docker image)
+        working-directory: ./quarkus
+        run: |
+          # run the built image
+          docker run -d --rm --name lra-coordinator --network host quay.io/jbosstm/lra-coordinator:1.0.0-SNAPSHOT
+          # run the TCK in Quarkus with the produced image, project is already built from previous step
+          ./mvnw clean verify -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
+          echo "Saving lra-coordinator image logs to $PWD/lra-coordinator.log"
+          docker logs lra-coordinator >"./lra-coordinator.log" 2>&1
+          docker kill lra-coordinator
+          echo "============== LRA coordinator image output =============="
+          cat ./lra-coordinator.log
+          echo "============== LRA coordinator image output end =============="
+          
 
 
