@@ -9,7 +9,7 @@
     <compiler-plugin.version>3.14.0</compiler-plugin.version>
     <maven.compiler.release>17</maven.compiler.release>
     <narayana.version>7.2.2.Final</narayana.version>
-    <lra.version>1.0.1.Final</lra.version>
+    <lra.version>1.0.2.Final</lra.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
