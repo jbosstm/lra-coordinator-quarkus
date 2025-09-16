@@ -4,3 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+  - package-ecosystem: docker
+    directory: "/src/main/docker"
+    schedule:
+      interval: daily

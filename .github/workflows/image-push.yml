@@ -27,9 +27,9 @@ jobs:
           set -e
           echo "::set-output name=NARAYANA_OR_QUARKUS_UPGRADE::$narayana_or_quarkus_upgrade"
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: temurin
           cache: maven
           check-latest: true
