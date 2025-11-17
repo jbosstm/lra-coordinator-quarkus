@@ -21,7 +21,7 @@ jobs:
         id: check_upgrades
         run: |
           set +e
-          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<narayana.version>"
+          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<lra.version>"
           export narayana_or_quarkus_upgrade=$(echo $?)
           set -e
           echo "::set-output name=NARAYANA_OR_QUARKUS_UPGRADE::$narayana_or_quarkus_upgrade"
@@ -37,7 +37,7 @@ jobs:
         if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         run: |
           ./mvnw clean package -Dquarkus.container-image.build=true -Dquarkus.container-image.push=true \
-          -Dquarkus.container-image.tag=$(./mvnw help:evaluate -Dexpression=narayana.version -q -DforceStdout)-$(./mvnw help:evaluate -Dexpression=quarkus.platform.version -q -DforceStdout)
+          -Dquarkus.container-image.tag=${{ github.run_number }}
         env:
           QUARKUS_CONTAINER_IMAGE_USERNAME: ${{ secrets.QUARKUS_CONTAINER_IMAGE_USERNAME }}
           QUARKUS_CONTAINER_IMAGE_PASSWORD: ${{ secrets.QUARKUS_CONTAINER_IMAGE_PASSWORD }}
