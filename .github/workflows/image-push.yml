@@ -21,10 +21,17 @@ jobs:
         id: check_upgrades
         run: |
           set +e
-          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<narayana.version>"
+          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<lra.version>"
           export narayana_or_quarkus_upgrade=$(echo $?)
           set -e
           echo "::set-output name=NARAYANA_OR_QUARKUS_UPGRADE::$narayana_or_quarkus_upgrade"
+      - name: Get the latest image tag from quay.io
+        id: latest_tag
+        if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          export latestTag=$(curl -s "https://quay.io/api/v1/repository/jbosstm/lra-coordinator/tag/?onlyActiveTags=true&limit=2" | jq '.tags[] | select(.name != "latest") | .name')
+          echo "Latest found tag is $latestTag"
+          echo "::set-output name=LATEST_QUAYIO_TAG::$latestTag"
       - name: Set up JDK
         if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         uses: actions/setup-java@v4
@@ -36,8 +43,21 @@ jobs:
       - name: Build, Test and push image
         if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         run: |
+          export tag=$(date '+%F')
+          export latest_tag=${{ steps.latest_tag.outputs.LATEST_QUAYIO_TAG }}
+           if [[ $latest_tag == $tag* ]] then
+            # we already have a tag with the today value, use increment
+            if [[ $latest_tag == $tag ]] then
+              # first increment
+              export tag="$tag-1"
+            else
+              export increment=$((${latest_tag:11}+1))
+              export tag=$tag-$increment
+            fi
+          fi
+
           ./mvnw clean package -Dquarkus.container-image.build=true -Dquarkus.container-image.push=true \
-          -Dquarkus.container-image.tag=$(./mvnw help:evaluate -Dexpression=narayana.version -q -DforceStdout)-$(./mvnw help:evaluate -Dexpression=quarkus.platform.version -q -DforceStdout)
+          -Dquarkus.container-image.tag=$tag
         env:
           QUARKUS_CONTAINER_IMAGE_USERNAME: ${{ secrets.QUARKUS_CONTAINER_IMAGE_USERNAME }}
           QUARKUS_CONTAINER_IMAGE_PASSWORD: ${{ secrets.QUARKUS_CONTAINER_IMAGE_PASSWORD }}
