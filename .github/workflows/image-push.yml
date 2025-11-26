@@ -24,14 +24,14 @@ jobs:
           git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<lra.version>"
           export narayana_or_quarkus_upgrade=$(echo $?)
           set -e
-          echo "::set-output name=NARAYANA_OR_QUARKUS_UPGRADE::$narayana_or_quarkus_upgrade"
+          echo "NARAYANA_OR_QUARKUS_UPGRADE=$narayana_or_quarkus_upgrade" >> "$GITHUB_OUTPUT"
       - name: Get the latest image tag from quay.io
         id: latest_tag
         if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         run: |
           export latestTag=$(curl -s "https://quay.io/api/v1/repository/jbosstm/lra-coordinator/tag/?onlyActiveTags=true&limit=2" | jq '.tags[] | select(.name != "latest") | .name')
           echo "Latest found tag is $latestTag"
-          echo "::set-output name=LATEST_QUAYIO_TAG::$latestTag"
+          echo "LATEST_QUAYIO_TAG=$latestTag" >> "$GITHUB_OUTPUT"
       - name: Set up JDK
         if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         uses: actions/setup-java@v4
@@ -45,7 +45,7 @@ jobs:
         run: |
           export tag=$(date '+%F')
           export latest_tag=${{ steps.latest_tag.outputs.LATEST_QUAYIO_TAG }}
-           if [[ $latest_tag == $tag* ]] then
+          if [[ $latest_tag == $tag* ]] then
             # we already have a tag with the today value, use increment
             if [[ $latest_tag == $tag ]] then
               # first increment
