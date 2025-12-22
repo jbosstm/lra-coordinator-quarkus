@@ -21,19 +21,19 @@ jobs:
         id: check_upgrades
         run: |
           set +e
-          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<lra.version>"
-          export narayana_or_quarkus_upgrade=$(echo $?)
+          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<lra.version>\|+FROM registry.access.redhat.com/ubi9/openjdk-21"
+          export baseos_narayana_or_quarkus_upgrade=$(echo $?)
           set -e
-          echo "NARAYANA_OR_QUARKUS_UPGRADE=$narayana_or_quarkus_upgrade" >> "$GITHUB_OUTPUT"
+          echo "BASEOS_NARAYANA_OR_QUARKUS_UPGRADE=$baseos_narayana_or_quarkus_upgrade" >> "$GITHUB_OUTPUT"
       - name: Get the latest image tag from quay.io
         id: latest_tag
-        if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.check_upgrades.outputs.BASEOS_NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         run: |
           export latestTag=$(curl -s "https://quay.io/api/v1/repository/jbosstm/lra-coordinator/tag/?onlyActiveTags=true&limit=2" | jq '.tags[] | select(.name != "latest") | .name')
           echo "Latest found tag is $latestTag"
           echo "LATEST_QUAYIO_TAG=$latestTag" >> "$GITHUB_OUTPUT"
       - name: Set up JDK
-        if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.check_upgrades.outputs.BASEOS_NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         uses: actions/setup-java@v4
         with:
           java-version: 21
@@ -41,7 +41,7 @@ jobs:
           cache: maven
           check-latest: true
       - name: Build, Test and push image
-        if: ${{ steps.check_upgrades.outputs.NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ steps.check_upgrades.outputs.BASEOS_NARAYANA_OR_QUARKUS_UPGRADE == '0' || github.event_name == 'workflow_dispatch' }}
         run: |
           export tag=$(date '+%F')
           export latest_tag=${{ steps.latest_tag.outputs.LATEST_QUAYIO_TAG }}
