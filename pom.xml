@@ -98,6 +98,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
+        <version>3.4.0</version>
         <dependencies>
           <dependency>
             <groupId>commons-io</groupId>
