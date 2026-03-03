@@ -23,11 +23,8 @@ Once the application is running, metrics are available at:
 ```
 http://localhost:8080/q/metrics
 ```
-
-This endpoint provides:
-- **HTTP metrics**: Request count, duration, and status codes
-- **JVM metrics**: Memory usage, thread count, garbage collection statistics
-- **Application metrics**: Custom LRA coordinator metrics
+For more information about the metrics provided by OpenTelemetry please visit https://github.com/quarkusio/quarkus/blob/main/docs/src/main/asciidoc/opentelemetry-metrics.adoc
+To expose custom LRA coordinator metrics it is possible to create a REST resource as described in the just mentioned Quarkus doc.
 
 ### Example Usage
 
@@ -55,6 +52,19 @@ The application is configured with:
 - Metrics enabled: Yes
 
 Additional OpenTelemetry configuration can be modified in `src/main/resources/application.properties`.
+
+### Grafana Dev Service (Optional)
+
+For a fully integrated observability stack in dev mode (Grafana, Loki, Tempo, Prometheus), you can add the following dependency to your `pom.xml`:
+```xml
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-observability-devservices-lgtm</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+This will automatically start a Grafana LGTM container when running in dev mode, giving you access to a pre-configured Grafana dashboard to visualize metrics, logs, and traces.
 
 ## Packaging and running the application
 
