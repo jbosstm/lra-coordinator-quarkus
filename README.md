@@ -56,6 +56,19 @@ The application is configured with:
 
 Additional OpenTelemetry configuration can be modified in `src/main/resources/application.properties`.
 
+### Grafana Dev Service (Optional)
+
+For a fully integrated observability stack in dev mode (Grafana, Loki, Tempo, Prometheus), you can add the following dependency to your `pom.xml`:
+```xml
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-observability-devservices-lgtm</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+This will automatically start a Grafana LGTM container when running in dev mode, giving you access to a pre-configured Grafana dashboard to visualize metrics, logs, and traces.
+
 ## Packaging and running the application
 
 The application can be packaged using:
