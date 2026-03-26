@@ -13,6 +13,62 @@ You can run your application in dev mode that enables live coding using:
 
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
 
+## OpenTelemetry and Metrics
+
+This application is instrumented with OpenTelemetry and exposes metrics in Prometheus format.
+
+### Metrics Endpoint
+
+Once the application is running, metrics are available at:
+```
+http://localhost:8080/q/metrics
+```
+
+This endpoint provides:
+- **HTTP metrics**: Request count, duration, and status codes
+- **JVM metrics**: Memory usage, thread count, garbage collection statistics
+- **Application metrics**: Custom LRA coordinator metrics
+
+### Example Usage
+
+To view metrics in your browser or with curl:
+```shell script
+curl http://localhost:8080/q/metrics
+```
+
+### Integration with Prometheus
+
+To scrape metrics with Prometheus, add the following job to your `prometheus.yml`:
+```yaml
+scrape_configs:
+  - job_name: 'lra-coordinator'
+    metrics_path: '/q/metrics'
+    static_configs:
+      - targets: ['localhost:8080']
+```
+
+### OpenTelemetry Configuration
+
+The application is configured with:
+- Service name: `lra-coordinator`
+- Traces enabled: Yes
+- Metrics enabled: Yes
+
+Additional OpenTelemetry configuration can be modified in `src/main/resources/application.properties`.
+
+### Grafana Dev Service (Optional)
+
+For a fully integrated observability stack in dev mode (Grafana, Loki, Tempo, Prometheus), you can add the following dependency to your `pom.xml`:
+```xml
+<dependency>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-observability-devservices-lgtm</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+This will automatically start a Grafana LGTM container when running in dev mode, giving you access to a pre-configured Grafana dashboard to visualize metrics, logs, and traces.
+
 ## Packaging and running the application
 
 The application can be packaged using:
