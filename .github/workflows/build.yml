@@ -50,7 +50,7 @@ jobs:
       - name: Build Quarkus
         working-directory: ./quarkus
         run: |
-          ./mvnw -Dquickly
+          ./mvnw -Dquickly-ci install
 
       - name: Quarkus integration (JAR)
         working-directory: ./quarkus
@@ -82,7 +82,7 @@ jobs:
       - name: Build Quarkus
         working-directory: ./quarkus
         run: |
-          ./mvnw -Dquickly
+          ./mvnw -Dquickly-ci install
 
       - name: Quarkus integration (Docker image)
         working-directory: ./quarkus
