@@ -14,7 +14,7 @@ jobs:
     name: Build with JDK ${{ matrix.java }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Integration verification with Quarkus (JAR)
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
@@ -42,7 +42,7 @@ jobs:
         run: mvn -B install
 
       - name: Checkout Quarkus
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: quarkusio/quarkus
           path: ./quarkus
@@ -50,7 +50,7 @@ jobs:
       - name: Build Quarkus
         working-directory: ./quarkus
         run: |
-          ./mvnw -Dquickly
+          ./mvnw -B -Dquickly -Dscalpel.enabled=false install
 
       - name: Quarkus integration (JAR)
         working-directory: ./quarkus
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Integration verification with Quarkus (Docker image)
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
@@ -74,7 +74,7 @@ jobs:
         run: mvn -B install -Dquarkus.container-image.build=true
 
       - name: Checkout Quarkus
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: quarkusio/quarkus
           path: ./quarkus
@@ -82,7 +82,7 @@ jobs:
       - name: Build Quarkus
         working-directory: ./quarkus
         run: |
-          ./mvnw -Dquickly
+          ./mvnw -B -Dquickly -Dscalpel.enabled=false install
 
       - name: Quarkus integration (Docker image)
         working-directory: ./quarkus
