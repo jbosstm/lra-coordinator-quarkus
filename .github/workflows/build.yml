@@ -56,7 +56,7 @@ jobs:
         working-directory: ./quarkus
         run: |
           java -jar ../target/quarkus-app/quarkus-run.jar &
-          ./mvnw clean verify -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
+          ./mvnw clean verify -Dscalpel.enabled=false -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
           kill %1
 
   integration-verification-image:
@@ -90,7 +90,7 @@ jobs:
           # run the built image
           docker run -d --rm --name lra-coordinator --network host quay.io/jbosstm/lra-coordinator:1.0.0-SNAPSHOT
           # run the TCK in Quarkus with the produced image, project is already built from previous step
-          ./mvnw clean verify -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
+          ./mvnw clean verify -Dscalpel.enabled=false -pl tcks/microprofile-lra -Dtcks -Dlra.coordinator.url=http://localhost:8080/lra-coordinator
           echo "Saving lra-coordinator image logs to $PWD/lra-coordinator.log"
           docker logs lra-coordinator >"./lra-coordinator.log" 2>&1
           docker kill lra-coordinator
