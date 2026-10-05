@@ -18,6 +18,30 @@
   </properties>
   <dependencyManagement>
     <dependencies>
+      <!-- Align every Narayana LRA artifact with the coordinator jar version. The quarkus-bom
+           might pin org.jboss.narayana.lra:* to an older release; without these
+           overrides the transitive lra-service-base would mismatch lra-coordinator-jar.
+           These direct entries take precedence over the imported quarkus-bom. -->
+      <dependency>
+        <groupId>org.jboss.narayana.lra</groupId>
+        <artifactId>lra-service-base</artifactId>
+        <version>${lra.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.narayana.lra</groupId>
+        <artifactId>lra-client</artifactId>
+        <version>${lra.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.narayana.lra</groupId>
+        <artifactId>lra-proxy-api</artifactId>
+        <version>${lra.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.narayana.lra</groupId>
+        <artifactId>narayana-lra</artifactId>
+        <version>${lra.version}</version>
+      </dependency>
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
