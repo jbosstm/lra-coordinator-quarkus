@@ -97,9 +97,21 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
+    <!-- MicroProfile JWT: validates inbound Bearer tokens on the coordinator endpoints
+         and exposes JsonWebToken via CDI for LRA outbound token propagation. -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-jwt</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Provides io.smallrye.jwt.build.Jwt for signing tokens in the JWT security test. -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-test-security-jwt</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -159,6 +171,11 @@
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
+            <!-- Present at build time so the smallrye-jwt dev/test extension skips generating an
+                 in-memory key pair (which would set an inline mp.jwt.verify.publickey that shadows
+                 the key locations the JWT tests configure). The value is never loaded: the tests
+                 sign with explicit keys, never via this configured signing key. -->
+            <smallrye.jwt.sign.key.location>${project.build.directory}/jwt-devmode-suppress.pem</smallrye.jwt.sign.key.location>
           </systemPropertyVariables>
         </configuration>
       </plugin>
