@@ -66,6 +66,55 @@ For a fully integrated observability stack in dev mode (Grafana, Loki, Tempo, Pr
 
 This will automatically start a Grafana LGTM container when running in dev mode, giving you access to a pre-configured Grafana dashboard to visualize metrics, logs, and traces.
 
+## JWT Security (optional)
+
+Narayana LRA 2.x can secure the coordinator with JWT. Support is wired in but **opt-in**: by
+default the coordinator runs open and unchanged. Three concerns can be enabled independently via
+configuration (no code changes needed) — see the commented block in
+`src/main/resources/application.properties`.
+
+### Inbound authentication
+
+Require a valid `Authorization: Bearer <jwt>` on the coordinator endpoints (`/lra-coordinator/*`),
+validated by the container's MicroProfile JWT implementation:
+
+```shell script
+java -jar target/quarkus-app/quarkus-run.jar \
+  -Dlra.auth.policy=authenticated \
+  -Dmp.jwt.verify.publickey.location=https://keycloak.example/realms/lra/protocol/openid-connect/certs \
+  -Dmp.jwt.verify.issuer=https://keycloak.example/realms/lra
+```
+
+`mp.jwt.verify.publickey.location` accepts a static PEM (file/classpath) or a JWKS/OIDC certs URL.
+The default `lra.auth.policy=permit` leaves the coordinator open.
+
+### Outbound token propagation
+
+Forward the caller's token on coordinator → participant callbacks (compensate, complete, status,
+forget, afterLRA) by registering the callback filter shipped in `lra-coordinator-jar`:
+
+```
+-Dlra.http-client.providers=io.narayana.lra.coordinator.security.JwtTokenCallbackRequestFilter
+```
+
+### Recovery service token
+
+The recovery thread runs outside any request context, so it has no caller token to propagate.
+Point it at a pre-provisioned token (file, classpath, or HTTP endpoint) that it attaches to retried
+callbacks:
+
+```
+-Dlra.security.service-token.location=/var/run/secrets/lra/token
+-Dlra.security.service-token.refresh-seconds=300
+```
+
+> **_NOTE:_** Avoid short-lived/expiring tokens for the service token — an LRA that outlives its
+> token can never complete.
+
+All settings have matching environment variables (e.g. `LRA_AUTH_POLICY`,
+`MP_JWT_VERIFY_PUBLICKEY_LOCATION`). For the full reference and token/issuance details see the
+[Narayana LRA security guide](https://github.com/jbosstm/lra/blob/2.0.0.Final/docs/src/main/asciidoc/security.adoc).
+
 ## Packaging and running the application
 
 The application can be packaged using:
