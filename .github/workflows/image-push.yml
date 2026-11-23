@@ -21,7 +21,7 @@ jobs:
         id: check_upgrades
         run: |
           set +e
-          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<lra.version>\|+FROM registry.access.redhat.com/ubi9/openjdk-21"
+          git diff -U0 HEAD^ HEAD | grep "<quarkus.platform.version>\|<lra.version>\|+FROM registry.access.redhat.com/ubi10/openjdk-21"
           export baseos_narayana_or_quarkus_upgrade=$(echo $?)
           set -e
           echo "BASEOS_NARAYANA_OR_QUARKUS_UPGRADE=$baseos_narayana_or_quarkus_upgrade" >> "$GITHUB_OUTPUT"
